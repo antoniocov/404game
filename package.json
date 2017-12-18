@@ -1,7 +1,7 @@
 {
-  "name": "medicanimalgame",
+  "name": "404game",
   "version": "1.0.0",
-  "description": "Game for medicanimal",
+  "description": "Game for 404 page",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
