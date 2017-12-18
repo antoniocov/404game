@@ -1,5 +1,7 @@
 const express = require('express');
+const path = require('path');
+const PORT = process.env.PORT || 3000;
 const app = express();
 
-app.use(express.static(__dirname+"/"));
-app.listen(80,()=>{console.log("APP STARTED!")});
+app.use(express.static(path.join(__dirname+"/")));
+app.listen(PORT,()=>{console.log(`APP STARTED ON PORT ${PORT}!`)});
