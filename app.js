@@ -2,4 +2,4 @@ const express = require('express');
 const app = express();
 
 app.use(express.static(__dirname+"/"));
-app.listen(3000,()=>{console.log("APP STARTED!")});
+app.listen(80,()=>{console.log("APP STARTED!")});
