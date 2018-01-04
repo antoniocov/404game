@@ -1,5 +1,5 @@
 class Player extends Phaser.Sprite{
-    constructor(game,x,y,cursors,gameState){
+    constructor(game,x,y,cursors,health,gameState){
         super(game,x,y,'player','idle/01.png');
         this._WALK_SPEED = 180;
         this._INCREASE_FACTOR = 1.4;
@@ -12,7 +12,7 @@ class Player extends Phaser.Sprite{
         this.game = game;
         this._cursors = cursors;
         this._isAlive = true;
-        this._health = 3;
+        this._health = health;
         this._maxHealth = 999;
         this._jumpAudio = this.game.add.audio('jump');
         this._jumpAudio.volume = 0.05;

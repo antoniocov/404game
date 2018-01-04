@@ -48,7 +48,7 @@ class GameState{
         //create player
         //take the coordinate in the map
         let playerPropertiesFromMap = this._currentLevel.findObjectsByTipe('player', 'objectsLayer');
-        this._player = new Player(this.game, playerPropertiesFromMap[0].x, playerPropertiesFromMap[0].y,this._cursors,this);
+        this._player = new Player(this.game, playerPropertiesFromMap[0].x, playerPropertiesFromMap[0].y,this._cursors,300,this);
         this._playerGroup = this.add.group();
         this._playerGroup.add(this._player);
 
@@ -96,6 +96,17 @@ class GameState{
 
         //icons on the map
         this._setupHud();
+
+        //set timer
+        this.game.time.events.loop(1000, () => {
+            let timer = this._currentLevel.decreaseTimer();
+            if(timer>=0){
+                this._elapsedTimeLabel.text = timer;
+            }else{
+                this.gameOver();
+            }
+        });
+
 
         //folow the player
         this.game.camera.follow(this._player);
@@ -215,6 +226,14 @@ class GameState{
     gameOver(){
         //TODO update Highsore in storage
 
+        //kill player if it is alive
+        if(this._player.alive){
+            this._player.die();
+        }
+
+        //stop events
+        this.game.time.events.stop();
+
         //game over overlay
         this._overlay = this.add.bitmapData(this.game.width,this.game.height);
         this._overlay.ctx.fillStyle = '#000000';
@@ -263,6 +282,10 @@ class GameState{
         this._playerIcon.fixedToCamera = true;
         this._playerHealth = this.add.text(startSpacingX * 2 + this._playerIcon.width, startSpacingY * 2 + this._coinIcon.height, this._player.health, styleText);
         this._playerHealth.fixedToCamera = true;
+
+        styleText = {font: '28px Arial', fill: '#fff'};
+        this._elapsedTimeLabel = this.game.add.text(this.game.width/2,5,`${this._currentLevel.elapsedTime}`,styleText);
+        this._elapsedTimeLabel.fixedToCamera = true;
     }
 
     updatePlayerHealthValue(val){
@@ -284,26 +307,27 @@ class GameState{
                 'peg_tileset':'peg_tileset'
             },
             'background_level_1',
+            250,
             layers);
         this.game.state.start('GameState',true,false,level);
     }
 
-    // render(){
-    //     if(Utils.isDebugMode()) {
-    //         this.game.time.advancedTiming = true;
-    //         this.game.debug.text(`[DEBUG] FPS: ${this.game.time.fps}` || '--', 2, 14, "#ffffff");
-    //         this.game.debug.text(`[DEBUG] LIFE: ${this._player.health}`,2,35,'#ffffff');
-    //         this.game.debug.text(`[DEBUG] COINS: ${this._numberOfCoins}`, 2, 56, '#ffffff');
-    //
-    //     }
-    //     if(Utils.isDebugPhysics()){
-    //         this.game.debug.body(this._player);
-    //         this._landMonsterEnemies.forEach((e) => {
-    //             this.game.debug.body(e);
-    //         });
-    //         this._coins.forEach((e) => {
-    //             this.game.debug.body(e);
-    //         });
-    //     }
-    // }
+    render(){
+        if(Utils.isDebugMode()) {
+            this.game.time.advancedTiming = true;
+            this.game.debug.text(`[DEBUG] FPS: ${this.game.time.fps}` || '--', 2, 14, "#ffffff");
+            this.game.debug.text(`[DEBUG] LIFE: ${this._player.health}`,2,35,'#ffffff');
+            this.game.debug.text(`[DEBUG] COINS: ${this._numberOfCoins}`, 2, 56, '#ffffff');
+
+        }
+        if(Utils.isDebugPhysics()){
+            this.game.debug.body(this._player);
+            this._landMonsterEnemies.forEach((e) => {
+                this.game.debug.body(e);
+            });
+            this._coins.forEach((e) => {
+                this.game.debug.body(e);
+            });
+        }
+    }
 }

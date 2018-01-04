@@ -1,10 +1,11 @@
 class Level{
-    constructor(levelName,tilesetImages,background,layers){
+    constructor(levelName,tilesetImages,background,elapsedTime,layers){
         this._levelName = levelName;
         this._tilesetImages = tilesetImages;
         this._layers = layers;
         this._background = background;
-        this._fatalLayers = ["seaLayer"]
+        this._fatalLayers = ["seaLayer"];
+        this._elapsedTime = elapsedTime;
     }
 
     get layers(){
@@ -17,6 +18,14 @@ class Level{
 
     get levelName(){
         return this._levelName;
+    }
+
+    get elapsedTime(){
+        return this._elapsedTime;
+    }
+
+    decreaseTimer(){
+        return --this._elapsedTime;
     }
 
     buildAndCreateLevel(game,state){

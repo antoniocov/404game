@@ -26,6 +26,10 @@ class PreloadState{
         this.load.image('coinIcon', `${Utils.getAssetsFolder()}/images/icons/coin.png`);
         this.load.image('playerSantaIcon', `${Utils.getAssetsFolder()}/images/icons/playerSantaIcon.png`);
         this.load.image('gameover', `${Utils.getAssetsFolder()}/images/gameover.png`);
+        this.load.image('medicanimalLogo', `${Utils.getAssetsFolder()}/images/medicanimalLogo_lit1.png`);
+
+        //preload image for intro
+        this.load.image('gameIntroLogo', `${Utils.getAssetsFolder()}/images/gamelogo.png`);
 
         //preload mobile keys
         this.load.image('leftKey', `${Utils.getAssetsFolder()}/images/controls/leftKey.png`);
@@ -41,25 +45,14 @@ class PreloadState{
         this.load.audio('jump',[`${Utils.getAssetsFolder()}/audio/jump.ogg`, `${Utils.getAssetsFolder()}/audio/jump.wav`]);
         this.load.audio('stomp', [`${Utils.getAssetsFolder()}/audio/stomp.ogg`, `${Utils.getAssetsFolder()}/audio/stomp.wav`]);
         this.load.audio('coin', [`${Utils.getAssetsFolder()}/audio/coin.ogg`, `${Utils.getAssetsFolder()}/audio/coin.wav`]);
+        this.load.audio('flickering', [`${Utils.getAssetsFolder()}/audio/flickering.ogg`, `${Utils.getAssetsFolder()}/audio/flickering.wav`]);
+        this.load.audio('deepAmbience', [`${Utils.getAssetsFolder()}/audio/deepAmbience.ogg`, `${Utils.getAssetsFolder()}/audio/deepAmbience.wav`]);
+        this.load.audio('stampAudio', [`${Utils.getAssetsFolder()}/audio/thick-stamp.ogg`, `${Utils.getAssetsFolder()}/audio/thick-stamp.wav`]);
+        this.load.audio('switchOffTvAudio', [`${Utils.getAssetsFolder()}/audio/switch_off_tv.ogg`, `${Utils.getAssetsFolder()}/audio/switch_off_tv.wav`]);
 
     }
 
     create(){
-        //load this from json file is better
-        let layers = [
-            new Layer('seaLayer',1,25,false,false,false),
-            new Layer('collisionLayer',1,25),
-            new Layer('backgroundLayer',0,0,true,false)
-        ];
-        let level = new Level(
-            `level_1`,
-            {
-                'tileset_1': 'tileset_1_level_1',
-                'tileset_2': 'tileset_2_level_1',
-                'peg_tileset':'peg_tileset'
-            },
-            'background_level_1',
-            layers);
-        this.game.state.start('GameState',true,false,level);
+        this.game.state.start('IntroState');
     }
 }

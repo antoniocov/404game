@@ -7,6 +7,8 @@ class Game{
     _loadStates(){
         this.game.state.add('BootState', BootState);
         this.game.state.add('PreloadState', PreloadState);
+        this.game.state.add('IntroState', IntroState);
+        this.game.state.add('MenuState', MenuState);
         this.game.state.add('GameState', GameState);
     }
 
