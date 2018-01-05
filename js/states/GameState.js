@@ -232,7 +232,7 @@ class GameState{
         }
 
         //stop events
-        this.game.time.events.stop();
+        this.game.time.events.pause();
 
         //game over overlay
         this._overlay = this.add.bitmapData(this.game.width,this.game.height);
@@ -309,6 +309,7 @@ class GameState{
             'background_level_1',
             250,
             layers);
+        this.game.time.events.resume();
         this.game.state.start('GameState',true,false,level);
     }
 
