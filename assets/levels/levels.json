@@ -1,0 +1,39 @@
+ {
+  "levels": [
+    {
+      "id": 0,
+      "name": "level_1",
+      "description": "Level 1",
+      "tilesetImages": {
+        "tileset_1": "tileset_1_level_1",
+        "tileset_2": "tileset_2_level_1",
+        "peg_tileset": "peg_tileset"
+      },
+      "background": "background_level_1",
+      "elapsedTime": 250,
+      "minCoinsPercentage": 85,
+      "layers": [
+        {
+          "name": "seaLayer",
+          "gIdStart": 1,
+          "gIdEnd": 25,
+          "sendToBack": false,
+          "hasCollision": false,
+          "resizeToWorld": false
+        },
+        {
+          "name": "collisionLayer",
+          "gIdStart": 1,
+          "gIdEnd": 25
+        },
+        {
+          "name": "backgroundLayer",
+          "gIdStart": 0,
+          "gIdEnd": 0,
+          "sendToBack": true,
+          "hasCollision": false
+        }
+      ]
+    }
+  ]
+}

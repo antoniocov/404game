@@ -50,9 +50,34 @@ class PreloadState{
         this.load.audio('stampAudio', [`${Utils.getAssetsFolder()}/audio/thick-stamp.ogg`, `${Utils.getAssetsFolder()}/audio/thick-stamp.wav`]);
         this.load.audio('switchOffTvAudio', [`${Utils.getAssetsFolder()}/audio/switch_off_tv.ogg`, `${Utils.getAssetsFolder()}/audio/switch_off_tv.wav`]);
 
+        //load levels data
+        this.load.json('levelsData', `${Utils.getAssetsFolder()}/levels/levels.json`);
+
     }
 
     create(){
-        this.game.state.start('IntroState');
+        if(Utils.isDebugMode()){
+            // let layers = [
+            //     new Layer('seaLayer',1,25,false,false,false),
+            //     new Layer('collisionLayer',1,25),
+            //     new Layer('backgroundLayer',0,0,true,false)
+            // ];
+            // let level = new Level(
+            //     `level_1`,
+            //     'Level 1',
+            //     {
+            //         'tileset_1': 'tileset_1_level_1',
+            //         'tileset_2': 'tileset_2_level_1',
+            //         'peg_tileset':'peg_tileset'
+            //     },
+            //     'background_level_1',
+            //     250,
+            //     layers);
+            let levelData = this.game.cache.getJSON('levelsData').levels[0];
+            let level = Utils.buildLevelData(levelData);
+            this.game.state.start('GameState',true,false,level);
+        }else {
+            this.game.state.start('IntroState');
+        }
     }
 }

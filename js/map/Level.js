@@ -1,11 +1,14 @@
 class Level{
-    constructor(levelName,tilesetImages,background,elapsedTime,layers){
+    constructor(id,levelName,description,tilesetImages,background,elapsedTime,minCoinsPercentage,layers){
+        this._id = id;
         this._levelName = levelName;
+        this._description = description;
         this._tilesetImages = tilesetImages;
         this._layers = layers;
         this._background = background;
         this._fatalLayers = ["seaLayer"];
         this._elapsedTime = elapsedTime;
+        this._minCoinsPercentage = minCoinsPercentage;
     }
 
     get layers(){
@@ -22,6 +25,18 @@ class Level{
 
     get elapsedTime(){
         return this._elapsedTime;
+    }
+
+    get description(){
+        return this._description;
+    }
+
+    get id(){
+        return this._id;
+    }
+
+    calculateMinimumCoinsRequestForLevel(totalCoins){
+        return Math.floor(totalCoins*(this._minCoinsPercentage/100));
     }
 
     decreaseTimer(){

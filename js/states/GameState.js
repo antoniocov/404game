@@ -16,6 +16,7 @@ class GameState{
         this._coinSound = this.game.add.audio('coin');
         this._coinSound.volume = 0.1;
 
+        this.game.paused = true;
     }
 
     create(){
@@ -25,6 +26,7 @@ class GameState{
         }
         //fullscreen
         this.game.input.onTap.add(this._fullScreenMode, this);
+        this._showInfoToUserBeforeStartGame();
     }
 
     update(){
@@ -293,24 +295,48 @@ class GameState{
     }
 
     _restart(){
-        //load this from json file is better
-        let layers = [
-            new Layer('seaLayer',1,25,false,false,false),
-            new Layer('collisionLayer',1,25),
-            new Layer('backgroundLayer',0,0,true,false)
-        ];
-        let level = new Level(
-            `level_1`,
-            {
-                'tileset_1': 'tileset_1_level_1',
-                'tileset_2': 'tileset_2_level_1',
-                'peg_tileset':'peg_tileset'
-            },
-            'background_level_1',
-            250,
-            layers);
         this.game.time.events.resume();
-        this.game.state.start('GameState',true,false,level);
+        this.game.state.start('GameState',true,false,this._currentLevel);
+    }
+
+    _showInfoToUserBeforeStartGame(){
+        let groupTextHud = this.game.add.group();
+
+        //add overlay before to start to show information on the level
+        let overlay = this.add.bitmapData(this.game.width,this.game.height);
+        overlay.ctx.fillStyle = '#000000';
+        overlay.ctx.fillRect(0, 0, this.game.width, this.game.height);
+        let panelBeforeStart = this.add.sprite(this.game.camera.x,this.game.camera.y, overlay);
+        //panelBeforeStart.alpha = 0.80;
+        panelBeforeStart.fixedToCamera = true;
+        groupTextHud.add(panelBeforeStart);
+
+
+        let styleLevelName = {font: '60px Arial', fill: '#fff'};
+        let textLevel = this.add.text(this.game.camera.x+this.game.camera.width/2, this.game.camera.y+this.game.camera.height/2, this._currentLevel.description, styleLevelName,groupTextHud);
+        textLevel.anchor.setTo(0.5);
+        textLevel.fixedToCamera = true;
+
+        let totalCoins = this._coins.length;
+        let styleSubText = {font: '25px Arial', fill: '#fff'};
+        let totalCoinText = this.add.text(this.game.camera.x+this.game.camera.width/2,textLevel.y+textLevel.height/2+10,`Total coin ${totalCoins}`,styleSubText,groupTextHud);
+        totalCoinText.anchor.setTo(0.5);
+        totalCoinText.fixedToCamera = true;
+
+        let minCoinsRequired = this._currentLevel.calculateMinimumCoinsRequestForLevel(totalCoins);
+        let minimumCoinsRequiredText = this.add.text(this.game.camera.x + this.game.camera.width / 2, totalCoinText.y + totalCoinText.height / 2 + 10, `Minimum coins required: ${minCoinsRequired}`, styleSubText, groupTextHud);
+        minimumCoinsRequiredText.anchor.setTo(0.5);
+        minimumCoinsRequiredText.fixedToCamera = true;
+
+        let startText = this.add.text(this.game.camera.x + this.game.camera.width / 2, minimumCoinsRequiredText.y + minimumCoinsRequiredText.height / 2 + 30, '(Touch to start the level)', styleSubText, groupTextHud);
+        startText.anchor.setTo(0.5);
+        startText.fixedToCamera = true;
+
+        this.game.input.onDown.addOnce(()=>{
+            this.game.paused = false;
+            groupTextHud.destroy();
+            overlay.destroy();
+        }, this);
     }
 
     render(){
