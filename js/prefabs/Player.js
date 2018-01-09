@@ -16,6 +16,8 @@ class Player extends Phaser.Sprite{
         this._maxHealth = 999;
         this._jumpAudio = this.game.add.audio('jump');
         this._jumpAudio.volume = 0.05;
+        this._damageAudio = this.game.add.audio('damageAudio');
+        this._damageAudio.volume = 0.1;
         this._gameState = gameState;
         this._init();
         this._loadTexture();
@@ -97,6 +99,7 @@ class Player extends Phaser.Sprite{
         if(this._health<=0) {
             this.die();
         }else{
+            this._damageAudio.play();
             this._gameState.updatePlayerHealthValue(this._health);
             this._hit = true;
             let tween = this.game.add.tween(this).to({alpha: 0.1}, 150, Phaser.Easing.Linear.None, true, 0, 10, true);
@@ -110,6 +113,7 @@ class Player extends Phaser.Sprite{
     die(){
         if(!this._isAlive)
             return;
+        this._gameState.stopLoopMusicForGameOver();
         this._gameState.updatePlayerHealthValue(0);
         this._isAlive = false;
         this.play('die');

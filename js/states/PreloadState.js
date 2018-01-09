@@ -27,6 +27,7 @@ class PreloadState{
         this.load.image('playerSantaIcon', `${Utils.getAssetsFolder()}/images/icons/playerSantaIcon.png`);
         this.load.image('gameover', `${Utils.getAssetsFolder()}/images/gameover.png`);
         this.load.image('medicanimalLogo', `${Utils.getAssetsFolder()}/images/medicanimalLogo_lit1.png`);
+        this.load.image('star', `${Utils.getAssetsFolder()}/images/star.png`);
 
         //preload image for intro
         this.load.image('gameIntroLogo', `${Utils.getAssetsFolder()}/images/gamelogo.png`);
@@ -49,6 +50,11 @@ class PreloadState{
         this.load.audio('deepAmbience', [`${Utils.getAssetsFolder()}/audio/deepAmbience.ogg`, `${Utils.getAssetsFolder()}/audio/deepAmbience.wav`]);
         this.load.audio('stampAudio', [`${Utils.getAssetsFolder()}/audio/thick-stamp.ogg`, `${Utils.getAssetsFolder()}/audio/thick-stamp.wav`]);
         this.load.audio('switchOffTvAudio', [`${Utils.getAssetsFolder()}/audio/switch_off_tv.ogg`, `${Utils.getAssetsFolder()}/audio/switch_off_tv.wav`]);
+        this.load.audio('gameLoopAudio', [`${Utils.getAssetsFolder()}/audio/game_loop.ogg`, `${Utils.getAssetsFolder()}/audio/game_loop.wav`]);
+        this.load.audio('gameOverAudio', [`${Utils.getAssetsFolder()}/audio/gameover.ogg`, `${Utils.getAssetsFolder()}/audio/gameover.wav`]);
+        this.load.audio('damageAudio', [`${Utils.getAssetsFolder()}/audio/damage.ogg`, `${Utils.getAssetsFolder()}/audio/damage.wav`]);
+        this.load.audio('menuAudio', [`${Utils.getAssetsFolder()}/audio/menu_loop.ogg`, `${Utils.getAssetsFolder()}/audio/menu_loop.wav`]);
+        this.load.audio('beepAudio', [`${Utils.getAssetsFolder()}/audio/beep.ogg`, `${Utils.getAssetsFolder()}/audio/beep.wav`]);
 
         //load levels data
         this.load.json('levelsData', `${Utils.getAssetsFolder()}/levels/levels.json`);

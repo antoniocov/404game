@@ -6,6 +6,8 @@ class GameState{
 
         //enable cursor keys
         this._cursors = this.game.input.keyboard.createCursorKeys();
+        this._enterKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+
 
         this._currentLevel = level;
 
@@ -15,6 +17,24 @@ class GameState{
 
         this._coinSound = this.game.add.audio('coin');
         this._coinSound.volume = 0.1;
+
+        this._loopMusic = this.game.add.audio('gameLoopAudio');
+        this._loopMusic.loop = true;
+        this._loopMusic.volume = 0.05;
+
+        this._gameOverAudio = this.game.add.audio('gameOverAudio');
+        this._gameOverAudio.volume = 0.1;
+
+        this._menuAudio = this.game.add.audio('menuAudio');
+        this._menuAudio.volume = 0.3;
+
+        this._beepAudio = this.game.add.audio('beepAudio');
+        this._beepAudio.volume = 0.5;
+
+        this._overlapOnGoalIsAllow = true;
+
+        //when player overlap goal but cannot complete level
+        this._currentGoalOverlapped = null;
 
         this.game.paused = true;
     }
@@ -26,6 +46,8 @@ class GameState{
         }
         //fullscreen
         this.game.input.onTap.add(this._fullScreenMode, this);
+
+        this._minCoinsRequired = this._currentLevel.calculateMinimumCoinsRequestForLevel(this._coins.length);
         this._showInfoToUserBeforeStartGame();
     }
 
@@ -41,6 +63,18 @@ class GameState{
 
         //collect coin
         this.game.physics.arcade.overlap(this._player, this._coins, this._hitCoins, null, this);
+
+        if(this._currentGoalOverlapped && !this._overlapOnGoalIsAllow
+            && !this._checkOverlapBetweenSprites(this._player,this._currentGoalOverlapped)) {
+            this._overlapOnGoalIsAllow = true;
+        }
+
+        //check goal
+        this.game.physics.arcade.overlap(this._player, this._goals, this._hitGoal, null, this);
+    }
+
+    _checkOverlapBetweenSprites(p1,p2){
+        return Phaser.Rectangle.intersects(p1.getBounds(), p2.getBounds());
     }
 
     _loadLevel(){
@@ -50,7 +84,7 @@ class GameState{
         //create player
         //take the coordinate in the map
         let playerPropertiesFromMap = this._currentLevel.findObjectsByTipe('player', 'objectsLayer');
-        this._player = new Player(this.game, playerPropertiesFromMap[0].x, playerPropertiesFromMap[0].y,this._cursors,300,this);
+        this._player = new Player(this.game, playerPropertiesFromMap[0].x, playerPropertiesFromMap[0].y,this._cursors,3,this);
         this._playerGroup = this.add.group();
         this._playerGroup.add(this._player);
 
@@ -87,6 +121,19 @@ class GameState{
             });
         }
 
+        // load goal
+        let goalProp = this._currentLevel.findObjectsByTipe('goal', 'objectsLayer');
+        if(goalProp.length>0){
+            this._goals = this.add.group();
+            goalProp.forEach((goalBlock)=>{
+                let goal = this.game.add.sprite(goalBlock.x, goalBlock.y, 'star');
+                this.game.physics.enable(goal, Phaser.Physics.ARCADE);
+                goal.body.immovable = true;
+                goal.body.allowGravity = false;
+                this._goals.add(goal);
+            })
+        }
+
         //create audio button
         this._audioButton = this.game.add.button(0, 0, 'audioIcon', this._muteGame, this);
         this._audioButton.x = this.game.width - (this._audioButton.width / 2) - 5;
@@ -102,9 +149,13 @@ class GameState{
         //set timer
         this.game.time.events.loop(1000, () => {
             let timer = this._currentLevel.decreaseTimer();
+            if(timer <= 30) {
+                this._beepAudio.play();
+            }
             if(timer>=0){
                 this._elapsedTimeLabel.text = timer;
             }else{
+                this._loopMusic.stop();
                 this.gameOver();
             }
         });
@@ -248,15 +299,17 @@ class GameState{
         this._gameOver.anchor.setTo(0.5);
 
         let styleText = {font: '40px Arial', fill: '#fff'};
-        let gameOverText = this.add.text(this.game.camera.x+this.game.camera.width/2, this.game.camera.y+this.game.camera.height/2+this._gameOver.height/2+40, 'Touch to restart', styleText);
+        let gameOverText = this.add.text(this.game.camera.x+this.game.camera.width/2, this.game.camera.y+this.game.camera.height/2+this._gameOver.height/2+40, 'Touch to restart or press enter key', styleText);
         gameOverText.anchor.setTo(0.5);
 
         //raise tween to show the overlay on the screen
-        this.add
+        let tweenOverlay = this.add
             .tween(this._panel)
             .to({y: this.game.camera.y}, 500,null,true)
             .onComplete.add(()=>{
-            this.game.input.onDown.addOnce(this._restart, this);
+                this._menuAudio.play();
+                this.game.input.onDown.addOnce(this._restart, this);
+                this._enterKey.onDown.addOnce(this._restart, this);
         });
     }
 
@@ -295,9 +348,62 @@ class GameState{
     }
 
     _restart(){
+        this._menuAudio.stop();
         this.game.time.events.resume();
         this.game.state.start('GameState',true,false,this._currentLevel);
     }
+
+    _hitGoal(player,goal) {
+        if(!this._overlapOnGoalIsAllow){
+            return;
+        }
+        this._currentGoalOverlapped = goal;
+        this._overlapOnGoalIsAllow = false;
+        if (this._numberOfCoins < this._minCoinsRequired) {
+            //cannot finish level
+            this._showNumberOfCoinsRequired();
+        }else{
+            player.alpha = 0;
+            goal.alpha = 0;
+            this._levelComplete();
+        }
+    }
+
+    _showNumberOfCoinsRequired(){
+        this.game.paused = true;
+        let groupTextHud = this.game.add.group();
+        //add overlay before to start to show information
+        let overlay = this.add.bitmapData(this.game.width,this.game.height);
+        overlay.ctx.fillStyle = '#000000';
+        overlay.ctx.fillRect(0, 0, this.game.width, this.game.height);
+        let panelShowInformation = this.add.sprite(0,0, overlay);
+        panelShowInformation.alpha = 0.70;
+        panelShowInformation.fixedToCamera = true;
+        groupTextHud.add(panelShowInformation);
+
+
+        let styleText = {font: '20px Arial', fill: '#fff'};
+        let infoText = this.add.text(this.game.camera.width/2,this.game.camera.height/2, `${this._minCoinsRequired} minimum coins required to complete level`, styleText,groupTextHud);
+        infoText.anchor.setTo(0.5);
+        infoText.fixedToCamera = true;
+
+        let resumeText = this.add.text(this.game.camera.width / 2, infoText.y + infoText.height / 2 + 30, '(Touch to resume or press Enter key)', styleText, groupTextHud);
+        resumeText.anchor.setTo(0.5);
+        resumeText.fixedToCamera = true;
+
+        this.game.input.onDown.addOnce(()=>{
+            this.game.paused = false;
+            groupTextHud.destroy();
+            overlay.destroy();
+        }, this);
+
+        this._enterKey.onDown.addOnce(() => {
+            this.game.paused = false;
+            groupTextHud.destroy();
+            overlay.destroy();
+        }, this);
+    }
+
 
     _showInfoToUserBeforeStartGame(){
         let groupTextHud = this.game.add.group();
@@ -306,29 +412,28 @@ class GameState{
         let overlay = this.add.bitmapData(this.game.width,this.game.height);
         overlay.ctx.fillStyle = '#000000';
         overlay.ctx.fillRect(0, 0, this.game.width, this.game.height);
-        let panelBeforeStart = this.add.sprite(this.game.camera.x,this.game.camera.y, overlay);
+        let panelBeforeStart = this.add.sprite(0,0, overlay);
         //panelBeforeStart.alpha = 0.80;
         panelBeforeStart.fixedToCamera = true;
         groupTextHud.add(panelBeforeStart);
 
 
         let styleLevelName = {font: '60px Arial', fill: '#fff'};
-        let textLevel = this.add.text(this.game.camera.x+this.game.camera.width/2, this.game.camera.y+this.game.camera.height/2, this._currentLevel.description, styleLevelName,groupTextHud);
+        let textLevel = this.add.text(this.game.camera.width/2,this.game.camera.height/2, this._currentLevel.description, styleLevelName,groupTextHud);
         textLevel.anchor.setTo(0.5);
         textLevel.fixedToCamera = true;
 
-        let totalCoins = this._coins.length;
         let styleSubText = {font: '25px Arial', fill: '#fff'};
-        let totalCoinText = this.add.text(this.game.camera.x+this.game.camera.width/2,textLevel.y+textLevel.height/2+10,`Total coin ${totalCoins}`,styleSubText,groupTextHud);
+        let totalCoinText = this.add.text(this.game.camera.width/2,textLevel.y+textLevel.height/2+10,`Total coin ${this._coins.length}`,styleSubText,groupTextHud);
         totalCoinText.anchor.setTo(0.5);
         totalCoinText.fixedToCamera = true;
 
-        let minCoinsRequired = this._currentLevel.calculateMinimumCoinsRequestForLevel(totalCoins);
-        let minimumCoinsRequiredText = this.add.text(this.game.camera.x + this.game.camera.width / 2, totalCoinText.y + totalCoinText.height / 2 + 10, `Minimum coins required: ${minCoinsRequired}`, styleSubText, groupTextHud);
+
+        let minimumCoinsRequiredText = this.add.text(this.game.camera.width / 2, totalCoinText.y + totalCoinText.height / 2 + 10, `Minimum coins required: ${this._minCoinsRequired}`, styleSubText, groupTextHud);
         minimumCoinsRequiredText.anchor.setTo(0.5);
         minimumCoinsRequiredText.fixedToCamera = true;
 
-        let startText = this.add.text(this.game.camera.x + this.game.camera.width / 2, minimumCoinsRequiredText.y + minimumCoinsRequiredText.height / 2 + 30, '(Touch to start the level)', styleSubText, groupTextHud);
+        let startText = this.add.text(this.game.camera.width / 2, minimumCoinsRequiredText.y + minimumCoinsRequiredText.height / 2 + 30, '(Touch or press enter key to start the level)', styleSubText, groupTextHud);
         startText.anchor.setTo(0.5);
         startText.fixedToCamera = true;
 
@@ -336,7 +441,24 @@ class GameState{
             this.game.paused = false;
             groupTextHud.destroy();
             overlay.destroy();
+            this._loopMusic.play();
         }, this);
+
+        this._enterKey.onDown.addOnce(()=>{
+            this.game.paused = false;
+            groupTextHud.destroy();
+            overlay.destroy();
+            this._loopMusic.play();
+        }, this);
+    }
+
+    stopLoopMusicForGameOver(){
+        this._loopMusic.stop();
+        this._gameOverAudio.play();
+    }
+
+    _levelComplete(){
+
     }
 
     render(){
